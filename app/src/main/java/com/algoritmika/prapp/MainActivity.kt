@@ -14,18 +14,21 @@ import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val viewModel: MyViewModel = MyViewModel()
         setContent {
-            MyScreen()
+            MyScreen(viewModel)
         }
     }
 }
 
 @Composable
-fun MyScreen(viewModel: MyViewModel = MyViewModel()) {
+fun MyScreen(viewModel: MyViewModel) {
+
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = viewModel.message.value)
         Button(
-            onClick = { viewModel.changeMessage("Текст изменён!") },
+            onClick = { viewModel.toggleMessage() },
             modifier = Modifier.padding(top = 8.dp)
         ) {
             Text("Изменить текст")
