@@ -10,6 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.CalendarView
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,5 +36,14 @@ fun MyScreen(viewModel: MyViewModel) {
         ) {
             Text("Изменить текст")
         }
+        AndroidView(
+            factory = { context ->
+                CalendarView(context).apply {
+                    val today = Calendar.getInstance()
+                    setDate(today.timeInMillis, false, true)
+                }
+            },
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }
