@@ -31,11 +31,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -70,7 +69,10 @@ import java.time.temporal.ChronoUnit
 import java.util.Calendar
 import java.util.Locale
 import androidx.compose.material.icons.filled.CalendarToday
-
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextField
+import androidx.compose.material3.Text
 
 class MainActivity : ComponentActivity() {
 
@@ -84,9 +86,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             PrAppTheme {
                 val ranges by remember { mutableStateOf(insertedRange) }
-                val grouped = groupRangesByMonthWithGlobalGaps(ranges)
-
-                MainScreen(ranges, grouped) { updated ->
+                MainScreen(ranges) { updated ->
                     saveDateRanges(this, updated)
                 }
             }
@@ -98,12 +98,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(
     ranges: List<ClosedRange<LocalDate>>,
-    grouped: Map<YearMonth, List<Pair<ClosedRange<LocalDate>, Long>>>,
     onSave: (List<ClosedRange<LocalDate>>) -> Unit
 ) {
     val context = LocalContext.current
     var currentTab by remember { mutableStateOf("calendar") }
     var currentRanges by remember { mutableStateOf(ranges) }
+    val groupedCurrent by remember { derivedStateOf { groupRangesByMonthWithGlobalGaps(currentRanges) } }
 
 
     ThreeZonesScreen(
@@ -111,7 +111,7 @@ fun MainScreen(
         middleContent = {
             when (currentTab) {
                 "calendar" -> DateListScreen(
-                    rangesByMonth = grouped,
+                    rangesByMonth = groupedCurrent,
                     onUpdateRange = { oldStart, oldEnd, newStart, newEnd ->
                         currentRanges = currentRanges.map {
                             if (it.start == oldStart && it.endInclusive == oldEnd) {
