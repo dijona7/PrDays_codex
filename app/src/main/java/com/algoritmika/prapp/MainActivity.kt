@@ -80,6 +80,7 @@ fun MainScreen(
     var currentTab by remember { mutableStateOf("calendar") }
     var currentRanges by remember { mutableStateOf(ranges) }
 
+
     ThreeZonesScreen(
         topContent = { CycleInfo(currentRanges) },
         middleContent = {
@@ -148,10 +149,9 @@ fun ThreeZonesScreen(
         ) {
             middleContent()
             }
-        }
 
         // Нижняя зона (NavigationBar)
-        NavigationBar {
+        NavigationBar (modifier = Modifier){
             NavigationBarItem(
                 selected = selectedTab == "calendar",
                 onClick = { onTabSelected("calendar") },
@@ -171,6 +171,7 @@ fun ThreeZonesScreen(
                 label = { Text("Settings") }
             )
         }
+}
 }
 
 
