@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +43,7 @@ fun FileEditorScreen(
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
-            text = "Edit date_ranges.txt",
+            text = stringResource(R.string.edit_file_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
@@ -97,12 +98,12 @@ fun FileEditorScreen(
                     }
                     error = null
                 } else {
-                    error = "File contains lines in wrong format!"
+                    error = context.getString(R.string.wrong_format_error)
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save")
+            Text(stringResource(R.string.save))
         }
     }
 }

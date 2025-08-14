@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">PrApp</string>
+    <string name="prediction_window">Окно предсказания</string>
+    <string name="standard_duration">Стандартная длительность</string>
+    <string name="apply_settings">Применить настройки</string>
+    <string name="calendar">Календарь</string>
+    <string name="file">Файл</string>
+    <string name="settings">Настройки</string>
+    <string name="edit_dates">Редактировать даты</string>
+    <string name="start_label">Начало: %s</string>
+    <string name="end_label">Конец: %s</string>
+    <string name="predicted_values_cannot_be_changed">Предсказанные значения нельзя изменить</string>
+    <string name="cancel">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="edit_file_title">Редактировать date_ranges.txt</string>
+    <string name="wrong_format_error">Файл содержит строки в неверном формате!</string>
+    <string name="day_of_cycle">День цикла</string>
+    <string name="language">Язык</string>
+    <string name="lang_english">Английский</string>
+    <string name="lang_russian">Русский</string>
+    <string name="lang_ukrainian">Украинский</string>
+    <string name="lang_norwegian">Норвежский</string>
+    <string name="change_text">Изменить текст</string>
+</resources>
