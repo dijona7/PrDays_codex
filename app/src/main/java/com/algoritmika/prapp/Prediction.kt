@@ -5,7 +5,7 @@ import java.time.temporal.ChronoUnit
 
 fun predictNextPeriodsMovingAverage(startDates: List<LocalDate>, windowSize: Int = 3): List<LocalDate> {
     require(startDates.size >= windowSize + 1) {
-        "Нужно минимум ${windowSize + 1} дат для прогноза"
+        "At least ${windowSize + 1} dates are required for prediction"
     }
 
     val intervals = startDates.zipWithNext { a, b ->
