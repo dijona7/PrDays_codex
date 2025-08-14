@@ -23,7 +23,7 @@ fun predictNextPeriodsMovingAverage(startDates: List<LocalDate>, windowSize: Int
     val predictions = mutableListOf<LocalDate>()
     var lastDate = startDates.last()
 
-    repeat(3) {
+    repeat(windowSize) {
         val avgInterval = movingAverage(intervals.lastIndex)
         lastDate = lastDate.plusDays(avgInterval.toLong())
         predictions.add(lastDate)
