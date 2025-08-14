@@ -30,12 +30,19 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.menuAnchor
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -129,12 +136,78 @@ fun MainScreen(
 
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    var windowSize by remember { mutableStateOf(prefs.getInt("windowSize", 3)) }
+    var duration by remember { mutableStateOf(prefs.getInt("standardDuration", 4)) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Settings screen")
+        SettingDropdown(
+            label = "Prediction window",
+            options = (1..5).toList(),
+            selected = windowSize,
+            onSelected = {
+                windowSize = it
+                prefs.edit().putInt("windowSize", it).apply()
+            }
+        )
+        SettingDropdown(
+            label = "Standard duration",
+            options = (3..6).toList(),
+            selected = duration,
+            onSelected = {
+                duration = it
+                prefs.edit().putInt("standardDuration", it).apply()
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingDropdown(
+    label: String,
+    options: List<Int>,
+    selected: Int,
+    onSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selected.toString(),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option.toString()) },
+                    onClick = {
+                        onSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -255,7 +328,10 @@ fun updateDateRangesWithPrediction(context: Context): List<ClosedRange<LocalDate
     val history = loadDateRanges(context)
 
     // Строим прогноз
-    val prediction =predictFutureRanges(history, windowSize = 3)
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val windowSize = prefs.getInt("windowSize", 3)
+    val duration = prefs.getInt("standardDuration", 4)
+    val prediction = predictFutureRanges(history, windowSize = windowSize, periodDuration = duration)
 
     // Объединяем
     val merged = history + prediction

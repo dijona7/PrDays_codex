@@ -35,12 +35,13 @@ fun predictNextPeriodsMovingAverage(startDates: List<LocalDate>, windowSize: Int
 
 fun predictFutureRanges(
     pastRanges: List<ClosedRange<LocalDate>>,
-    windowSize: Int = 3
+    windowSize: Int = 3,
+    periodDuration: Int = 4
 ): List<ClosedRange<LocalDate>> {
     val startDates = pastRanges.map { it.start }
     val predictedStarts = predictNextPeriodsMovingAverage(startDates, windowSize)
     return predictedStarts.map { startDate ->
-        startDate..startDate.plusDays(4)
+        startDate..startDate.plusDays(periodDuration.toLong())
     }
 }
 
