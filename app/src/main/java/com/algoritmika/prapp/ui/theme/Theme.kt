@@ -15,7 +15,8 @@ private val DarkColorScheme = darkColorScheme(
     background = DarkBackground,
     onBackground = Color.White,
     surface = DarkCard,
-    onSurface = Color.White
+    onSurface = Color.White,
+    scrim = DarkBackground.copy(alpha = 0.6f)
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -26,7 +27,8 @@ private val LightColorScheme = lightColorScheme(
     background = BeigeBackground,
     onBackground = DarkText,
     surface = Color.White,
-    onSurface = DarkText
+    onSurface = DarkText,
+    scrim = DarkBackground.copy(alpha = 0.6f)
 )
 
 @Composable
