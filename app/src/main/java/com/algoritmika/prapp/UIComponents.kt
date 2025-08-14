@@ -56,7 +56,7 @@ fun CycleInfo(ranges: List<ClosedRange<LocalDate>>) {
                     )
                     Text(
                         text = "Day of Cycle",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
