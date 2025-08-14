@@ -55,6 +55,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Calendar
+import java.util.Locale
 
 
 class MainActivity : ComponentActivity() {
@@ -414,11 +415,17 @@ fun DateEditDialog(
     val context = LocalContext.current
     var startDate by remember { mutableStateOf(initialStart) }
     var endDate by remember { mutableStateOf(initialEnd) }
-    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.ENGLISH)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Изменить даты") },
+        title = {
+            Text(
+                text = "Edit Dates",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
         text = {
             Column {
                 Button(onClick = {
@@ -432,7 +439,7 @@ fun DateEditDialog(
                         startDate.dayOfMonth
                     ).show()
                 }) {
-                    Text("Начало: ${startDate.format(formatter)}")
+                    Text("Start: ${startDate.format(formatter)}")
                 }
 
                 Button(onClick = {
@@ -446,20 +453,22 @@ fun DateEditDialog(
                         endDate.dayOfMonth
                     ).show()
                 }) {
-                    Text("Конец: ${endDate.format(formatter)}")
+                    Text("End: ${endDate.format(formatter)}")
                 }
             }
         },
         confirmButton = {
             Button(onClick = { onConfirm(startDate, endDate) }) {
-                Text("Сохранить")
+                Text("Save")
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Отмена")
+                Text("Cancel")
             }
-        }
+        },
+        shape = RoundedCornerShape(12.dp),
+        containerColor = MaterialTheme.colorScheme.surface
     )
 }
 
