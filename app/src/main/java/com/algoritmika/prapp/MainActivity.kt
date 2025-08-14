@@ -1,5 +1,6 @@
 package com.algoritmika.prapp
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
@@ -55,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,6 +81,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val lang = prefs.getString("language", "en") ?: "en"
+        setLocale(this, lang)
+
         // снова читаем уже обновлённый файл
         val updatedRanges = loadDateRanges(this)
         val insertedRange = updateDateRangesWithPrediction(this)
@@ -92,6 +98,15 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+fun setLocale(context: Context, language: String) {
+    val locale = Locale(language)
+    Locale.setDefault(locale)
+    val resources = context.resources
+    val config = resources.configuration
+    config.setLocale(locale)
+    resources.updateConfiguration(config, resources.displayMetrics)
 }
 
 
@@ -145,6 +160,7 @@ fun SettingsScreen(onApply: (List<ClosedRange<LocalDate>>) -> Unit) {
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     var windowSize by remember { mutableStateOf(prefs.getInt("windowSize", 3)) }
     var duration by remember { mutableStateOf(prefs.getInt("standardDuration", 4)) }
+    var language by remember { mutableStateOf(prefs.getString("language", "en") ?: "en") }
 
     Column(
         modifier = Modifier
@@ -153,7 +169,7 @@ fun SettingsScreen(onApply: (List<ClosedRange<LocalDate>>) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         SettingDropdown(
-            label = "Prediction window",
+            label = stringResource(R.string.prediction_window),
             options = (1..5).toList(),
             selected = windowSize,
             onSelected = {
@@ -162,12 +178,28 @@ fun SettingsScreen(onApply: (List<ClosedRange<LocalDate>>) -> Unit) {
             }
         )
         SettingDropdown(
-            label = "Standard duration",
+            label = stringResource(R.string.standard_duration),
             options = (3..6).toList(),
             selected = duration,
             onSelected = {
                 duration = it
                 prefs.edit().putInt("standardDuration", it).apply()
+            }
+        )
+        LanguageDropdown(
+            label = stringResource(R.string.language),
+            options = mapOf(
+                stringResource(R.string.lang_english) to "en",
+                stringResource(R.string.lang_russian) to "ru",
+                stringResource(R.string.lang_ukrainian) to "uk",
+                stringResource(R.string.lang_norwegian) to "nb"
+            ),
+            selected = language,
+            onSelected = {
+                language = it
+                prefs.edit().putString("language", it).apply()
+                setLocale(context, it)
+                (context as? Activity)?.recreate()
             }
         )
         Button(
@@ -177,7 +209,7 @@ fun SettingsScreen(onApply: (List<ClosedRange<LocalDate>>) -> Unit) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Apply Settings")
+            Text(stringResource(R.string.apply_settings))
         }
     }
 }
@@ -223,6 +255,46 @@ fun SettingDropdown(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LanguageDropdown(
+    label: String,
+    options: Map<String, String>,
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = options.entries.firstOrNull { it.value == selected }?.key ?: ""
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { (labelText, code) ->
+                DropdownMenuItem(
+                    text = { Text(labelText) },
+                    onClick = {
+                        onSelected(code)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
 
 
 @Composable
@@ -248,8 +320,8 @@ fun ThreeZonesScreen(
                 NavigationBarItem(
                     selected = selectedTab == "calendar",
                     onClick = { onTabSelected("calendar") },
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
-                    label = { Text("Calendar") },
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = stringResource(R.string.calendar)) },
+                    label = { Text(stringResource(R.string.calendar)) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
                         unselectedIconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -261,8 +333,8 @@ fun ThreeZonesScreen(
                 NavigationBarItem(
                     selected = selectedTab == "file",
                     onClick = { onTabSelected("file") },
-                    icon = { Icon(Icons.Default.Info, contentDescription = "File") },
-                    label = { Text("File") },
+                    icon = { Icon(Icons.Default.Info, contentDescription = stringResource(R.string.file)) },
+                    label = { Text(stringResource(R.string.file)) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
                         unselectedIconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -274,8 +346,8 @@ fun ThreeZonesScreen(
                 NavigationBarItem(
                     selected = selectedTab == "settings",
                     onClick = { onTabSelected("settings") },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) },
+                    label = { Text(stringResource(R.string.settings)) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = Color.White,
                         unselectedIconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -527,7 +599,7 @@ fun DateEditDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Edit Dates",
+                    text = stringResource(R.string.edit_dates),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -548,7 +620,7 @@ fun DateEditDialog(
                 ) {
                     Icon(Icons.Default.CalendarToday, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Start: ${startDate.format(formatter)}")
+                    Text(stringResource(R.string.start_label, startDate.format(formatter)))
                 }
                 OutlinedButton(
                     onClick = {
@@ -567,11 +639,11 @@ fun DateEditDialog(
                 ) {
                     Icon(Icons.Default.CalendarToday, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("End: ${endDate.format(formatter)}")
+                    Text(stringResource(R.string.end_label, endDate.format(formatter)))
                 }
                 if (!editable) {
                     Text(
-                        text = "Predicted values cannot be changed",
+                        text = stringResource(R.string.predicted_values_cannot_be_changed),
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -584,7 +656,7 @@ fun DateEditDialog(
                         onClick = onDismiss,
                         colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     Spacer(Modifier.width(12.dp))
                     Button(
@@ -592,7 +664,7 @@ fun DateEditDialog(
                         enabled = editable,
                         shape = RoundedCornerShape(50)
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.save))
                     }
                 }
             }
@@ -608,7 +680,7 @@ fun MyScreen(viewModel: MyViewModel) {
             onClick = { viewModel.toggleMessage() },
             modifier = Modifier.padding(top = 8.dp)
         ) {
-            Text("Изменить текст")
+            Text(stringResource(R.string.change_text))
         }
         AndroidView(
             factory = { context ->
