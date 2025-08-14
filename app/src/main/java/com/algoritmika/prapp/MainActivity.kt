@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -129,49 +130,47 @@ fun ThreeZonesScreen(
     selectedTab: String,
     onTabSelected: (String) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-
-        // Верхняя зона (фиксированная высота)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f) //
-                .background(Color.Gray)
-        ) {
-            topContent()
+    Scaffold(
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Gray)
+            ) {
+                topContent()
+            }
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == "calendar",
+                    onClick = { onTabSelected("calendar") },
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
+                    label = { Text("Calendar") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == "file",
+                    onClick = { onTabSelected("file") },
+                    icon = { Icon(Icons.Default.Info, contentDescription = "File") },
+                    label = { Text("File") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == "settings",
+                    onClick = { onTabSelected("settings") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings") }
+                )
+            }
         }
-
-        // Средняя зона (занимает всё оставшееся место и скроллится)
+    ) { innerPadding ->
         Box(
             modifier = Modifier
-                .weight(4f) // ← основная магия
-                .fillMaxWidth()
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
             middleContent()
-            }
-
-        // Нижняя зона (NavigationBar)
-        NavigationBar (modifier = Modifier){
-            NavigationBarItem(
-                selected = selectedTab == "calendar",
-                onClick = { onTabSelected("calendar") },
-                icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
-                label = { Text("Calendar") }
-            )
-            NavigationBarItem(
-                selected = selectedTab == "file",
-                onClick = { onTabSelected("file") },
-                icon = { Icon(Icons.Default.Info, contentDescription = "File") },
-                label = { Text("File") }
-            )
-            NavigationBarItem(
-                selected = selectedTab == "settings",
-                onClick = { onTabSelected("settings") },
-                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                label = { Text("Settings") }
-            )
         }
-}
+    }
 }
 
 
