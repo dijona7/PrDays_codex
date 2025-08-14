@@ -54,7 +54,7 @@ fun FileEditorScreen(context: Context,
         }
 
         error?.let {
-            Text(text = it, color = Color.Red, modifier = Modifier.padding(top = 4.dp))
+            Text(text = it, color = Color.Yellow, modifier = Modifier.padding(top = 4.dp))
         }
 
         Spacer(Modifier.height(8.dp))
