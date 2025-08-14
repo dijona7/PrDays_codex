@@ -20,22 +20,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-
 @Composable
-fun FileEditorScreen(context: Context,
-    onSave: (List<ClosedRange<LocalDate>>) -> Unit) {
-    val file = File(context.filesDir, "date_ranges.txt")
-    var text by remember { mutableStateOf(file.readText()) }
+fun FileEditorScreen(
+    context: Context,
+    onSave: (List<ClosedRange<LocalDate>>) -> Unit
+) {
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val history = loadDateRanges(context)
+    var text by remember {
+        mutableStateOf(
+            history.joinToString("\n") {
+                "${it.start.format(formatter)},${it.endInclusive.format(formatter)}"
+            }
+        )
+    }
     var error by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Редактирование date_ranges.txt", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "Edit date_ranges.txt",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
 
         Spacer(Modifier.height(8.dp))
 
@@ -43,7 +53,7 @@ fun FileEditorScreen(context: Context,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState()) // ← прокрутка
+                .verticalScroll(rememberScrollState())
         ) {
             TextField(
                 value = text,
@@ -54,7 +64,11 @@ fun FileEditorScreen(context: Context,
         }
 
         error?.let {
-            Text(text = it, color = Color.Yellow, modifier = Modifier.padding(top = 4.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
 
         Spacer(Modifier.height(8.dp))
@@ -67,29 +81,29 @@ fun FileEditorScreen(context: Context,
                 }
 
                 if (isValid) {
-                    file.writeText(text.trim())
-                    error = null
-
-                    // Парсим строки в список диапазонов
-
                     val newRanges = text.lines()
                         .filter { it.isNotBlank() }
                         .map { line ->
                             val (startStr, endStr) = line.split(",")
-                            val start = LocalDate.parse(startStr.trim(), DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-                            val end = LocalDate.parse(endStr.trim(), DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                            val start = LocalDate.parse(startStr.trim(), formatter)
+                            val end = LocalDate.parse(endStr.trim(), formatter)
                             start..end
                         }
-
-                    onSave(newRanges)
-
+                    saveDateRanges(context, newRanges)
+                    val updated = updateDateRangesWithPrediction(context)
+                    onSave(updated)
+                    text = loadDateRanges(context).joinToString("\n") {
+                        "${it.start.format(formatter)},${it.endInclusive.format(formatter)}"
+                    }
+                    error = null
                 } else {
-                    error = "Файл содержит строки в неправильном формате!"
+                    error = "File contains lines in wrong format!"
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Сохранить")
+            Text("Save")
         }
     }
 }
+

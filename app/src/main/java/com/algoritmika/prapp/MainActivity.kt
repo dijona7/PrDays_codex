@@ -125,7 +125,10 @@ fun MainScreen(
                     currentRanges = newRanges
                     onSave(currentRanges)
                 }
-                "settings" -> SettingsScreen()
+                "settings" -> SettingsScreen { updated ->
+                    currentRanges = updated
+                    onSave(currentRanges)
+                }
             }
         },
         selectedTab = currentTab,
@@ -137,7 +140,7 @@ fun MainScreen(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SettingsScreen() {
+fun SettingsScreen(onApply: (List<ClosedRange<LocalDate>>) -> Unit) {
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     var windowSize by remember { mutableStateOf(prefs.getInt("windowSize", 3)) }
@@ -167,6 +170,15 @@ fun SettingsScreen() {
                 prefs.edit().putInt("standardDuration", it).apply()
             }
         )
+        Button(
+            onClick = {
+                val updated = updateDateRangesWithPrediction(context)
+                onApply(updated)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Apply Settings")
+        }
     }
 }
 
@@ -426,6 +438,7 @@ fun DateListScreen(
     }
 
     editingRange?.let { range ->
+        val isFutureRange = range.start.isAfter(LocalDate.now())
         DateEditDialog(
             initialStart = range.start,
             initialEnd = range.endInclusive,
@@ -433,7 +446,8 @@ fun DateListScreen(
                 onUpdateRange(range.start, range.endInclusive, newStart, newEnd)
                 editingRange = null
             },
-            onDismiss = { editingRange = null }
+            onDismiss = { editingRange = null },
+            editable = !isFutureRange
         )
     }
 }
@@ -493,7 +507,8 @@ fun DateEditDialog(
     initialStart: LocalDate,
     initialEnd: LocalDate,
     onConfirm: (LocalDate, LocalDate) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    editable: Boolean = true
 ) {
     val context = LocalContext.current
     var startDate by remember { mutableStateOf(initialStart) }
@@ -554,6 +569,12 @@ fun DateEditDialog(
                     Spacer(Modifier.width(8.dp))
                     Text("End: ${endDate.format(formatter)}")
                 }
+                if (!editable) {
+                    Text(
+                        text = "Predicted values cannot be changed",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
@@ -568,6 +589,7 @@ fun DateEditDialog(
                     Spacer(Modifier.width(12.dp))
                     Button(
                         onClick = { onConfirm(startDate, endDate) },
+                        enabled = editable,
                         shape = RoundedCornerShape(50)
                     ) {
                         Text("Save")
